@@ -42,7 +42,7 @@ public class C_Player : MonoBehaviour {
     protected C_UIHP HP_ui;
     public string s_name = "player";
     public Transform player_tra;
-    private bool b_hurting,b_attack_enable,b_play_ani;
+    private bool b_hurting,b_attack_enable,b_play_ani, b_is_attack;
     private float f_hurting_time,f_hurt_dir,f_attack_time;
     private int i_hit_number;
     C_PlayerAniEvent player_ani;
@@ -92,7 +92,7 @@ public class C_Player : MonoBehaviour {
         Stick_col = transform.Find("Stick_col");
         Stick_col.gameObject.SetActive(false);
         b_AOE_has = false;
-        b_hurting = b_play_ani =  false;
+        b_hurting = b_play_ani = b_is_attack = false;
         b_attack_enable = true;
         f_hurting_time = f_attack_time = 0;
         i_hit_number = 0;
@@ -375,6 +375,7 @@ public class C_Player : MonoBehaviour {
         if (b_attack_enable && b_play_ani)
         {
             Debug.Log("continue " + i_hit_number);
+            b_is_attack = true;
             player_ani.StickSwingSound(i_hit_number);
             if (i_hit_number < 1)
             {
@@ -421,6 +422,7 @@ public class C_Player : MonoBehaviour {
             b_hit_away = false;
         } 
         b_attack_enable = true;
+        b_is_attack = false;
         Stick_col.gameObject.SetActive(false);
     }
 
@@ -558,8 +560,12 @@ public class C_Player : MonoBehaviour {
         }
         else if (collider.tag == "enemy") {
             //if(b_AOE_has) collider.gameObject.SendMessage("GetHurt");
-            collider.gameObject.GetComponent<C_EnemyBase>().GetHurt(b_hit_away, transform.localScale.x);
-            Debug.Log("enemy_hurt");
+            if (b_is_attack) {
+                collider.gameObject.GetComponent<C_EnemyBase>().GetHurt(b_hit_away, transform.localScale.x);
+                b_is_attack = false;
+                Debug.Log("enemy_hurt");
+            } 
+
         }
         else if (collider.tag == "debris")
         {

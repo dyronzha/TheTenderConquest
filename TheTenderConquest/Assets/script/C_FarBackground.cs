@@ -32,9 +32,13 @@ public class C_FarBackground : MonoBehaviour {
             far_scenes[i].bk_f_y = far_scenes[i].limit_b;
         }
     }
-	
-	// Update is called once per frame
-	void FixedUpdate () {
+
+    // Update is called once per frame
+    private void Update()
+    {
+        if (C_SceneManager.SceneManger.b_camera_busy) FarBackgroundMove();
+    }
+    void FixedUpdate () {
         if (!C_SceneManager.SceneManger.b_camera_busy) FarBackgroundMove();
 	}
 

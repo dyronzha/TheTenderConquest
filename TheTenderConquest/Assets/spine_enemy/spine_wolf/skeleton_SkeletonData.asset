@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f1b3b4b945939a54ea0b23d3396115fb, type: 3}
-  m_Name: WolfSkeleton
+  m_Name: skeleton_SkeletonData
   m_EditorClassIdentifier: 
   atlasAssets:
   - {fileID: 11400000, guid: b7a1fbf261a9bf549b2894951e9b20f8, type: 2}
@@ -18,5 +18,5 @@ MonoBehaviour:
   fromAnimation: []
   toAnimation: []
   duration: []
-  defaultMix: 0
-  controller: {fileID: 9100000, guid: 2db345fedad1f4949bdad18e16e30833, type: 2}
+  defaultMix: 0.2
+  controller: {fileID: 0}

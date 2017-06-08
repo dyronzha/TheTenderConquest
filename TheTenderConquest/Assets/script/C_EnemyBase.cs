@@ -73,6 +73,7 @@ public class C_EnemyBase : MonoBehaviour {
         else b_toofar = false;
         if (b_attack && !Wait(ref f_atk_blank, 2.0f)) return true;
         else {
+            //Debug.Log("after_wait" + f_atk_blank);
             f_atk_blank = 0;
             b_attack = false;
         }
@@ -82,9 +83,11 @@ public class C_EnemyBase : MonoBehaviour {
             if (!b_toofar && f_player_dis<5.0f)
             {
                 walkto_vec3 = new Vector3(ray_seeplayer.transform.position.x - transform.position.x, 0, 0);
-                transform.localScale = new Vector3(1.0f * Mathf.Sign(transform.position.x - ray_seeplayer.transform.position.x), 1, 1);
-                if (Mathf.Abs((ray_seeplayer.transform.position.x - transform.position.x)) < 1.5f)
+                if(!b_attack)transform.localScale = new Vector3(1.0f * Mathf.Sign(transform.position.x - ray_seeplayer.transform.position.x), 1, 1);
+                if (Mathf.Abs((ray_seeplayer.transform.position.x - transform.position.x)) < 1.5f && !b_attack)
                 {
+                    Debug.Log("enemy attack");
+                    if (b_is_hurt) return true;
                     enemy_body.velocity = new Vector3(0, 0, 0);
                     enemy_animator.SetBool("attack_over", false);
                     enemy_animator.Play("EnemyAttack");
@@ -169,7 +172,6 @@ public class C_EnemyBase : MonoBehaviour {
         if ( f_current_time < f_total_time)
         {
             f_current_time += Time.deltaTime;
-            //Debug.Log("wait" + f_current_time);
             return false;
         }
         else {
@@ -180,22 +182,23 @@ public class C_EnemyBase : MonoBehaviour {
 
     public void Attackarea(){
         hit_area.enabled = true;
-        b_attack = true;
     }
 
     void AttackOver() {
         hit_area.enabled = false;
         enemy_animator.SetBool("attack_over",true);
+        //b_attack = false;
     }
 
     public void GetHurt(bool hit_away, float dir) {
-        //if (b_attack) return;
         int random = Random.Range(0,2);
         audio_source.PlayOneShot(hurt_sound[random]);
         i_HP--;
         b_is_hurt = true;
         b_hit_away = hit_away;
-        AttackOver();
+        hit_area.enabled = false;
+        enemy_animator.SetBool("attack_over", true);
+        f_atk_blank = 0.0f;
         if (hit_away) {
             f_away_dir = dir;
             enemy_body.velocity = new Vector3(10.0f*f_away_dir,0.0f,0.0f);
@@ -238,7 +241,7 @@ public class C_EnemyBase : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Player" && b_attack)
+        if (collision.tag == "Player" && b_attack && !b_is_hurt)
         {
             hit_area.enabled = false;
             collision.gameObject.SendMessage("GetHurt",transform.localScale.x);
@@ -252,9 +255,5 @@ public class C_EnemyBase : MonoBehaviour {
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.tag == "Player")
-        {
-            b_attack = false;
-        }
     }
 }
