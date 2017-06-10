@@ -6,6 +6,7 @@ public class C_FarBackground : MonoBehaviour {
 
     [System.Serializable]
     public struct child_far_scene {
+        public bool b_infinite_far;
         public GameObject O_far_scene;
         public float limit_r, limit_l, limit_t, limit_b;
         [System.NonSerialized]
@@ -15,11 +16,14 @@ public class C_FarBackground : MonoBehaviour {
 
     float bk_f_x,bk_f_y;
     GameObject camera;
+    C_CameraFollow c_camera;
     float camera_r, camera_l;
     float camera_t, camera_b;
+    Vector2 temp_vec2;
     // Use this for initialization
     void Awake () {
         camera = GameObject.Find("Main Camera");
+        c_camera = camera.GetComponent<C_CameraFollow>();
         //limit_l = 37.4f; limit_r = 64.5f;
         camera_l = 20.4f; camera_r = 92.2f;
         //limit_t = 25.2f; limit_b = 17.6f;
@@ -49,8 +53,18 @@ public class C_FarBackground : MonoBehaviour {
             else if (camera.transform.position.x >= camera_r) far_scenes[i].bk_f_x = far_scenes[i].limit_r;
             else
             {
-                far_scenes[i].bk_f_x = far_scenes[i].limit_l + (camera.transform.position.x - camera_l) * far_scenes[i].trans_value_x;
-                    //Debug.Log(this.gameObject.name + "  " + (camera.transform.position.x - camera_l) * trans_value);
+                if (!far_scenes[i].b_infinite_far) far_scenes[i].bk_f_x = far_scenes[i].limit_l + (camera.transform.position.x - camera_l) * far_scenes[i].trans_value_x;
+                else {
+                    if (c_camera._b_right && !C_SceneManager.SceneManger.b_camera_busy)
+                    {
+                        temp_vec2 = far_scenes[i].O_far_scene.transform.position - C_SceneManager.SceneManger.O_player.transform.position;
+                        far_scenes[i].bk_f_x = far_scenes[i].limit_l + (camera.transform.position.x - camera_l) * far_scenes[i].trans_value_x;
+                    }
+                    else {
+                        far_scenes[i].bk_f_x = C_SceneManager.SceneManger.O_player.transform.position.x + temp_vec2.x - transform.position.x;
+                    }
+                }
+                //Debug.Log(this.gameObject.name + "  " + (camera.transform.position.x - camera_l) * trans_value);
             }
             if (camera.transform.position.y <= camera_b) far_scenes[i].bk_f_y = far_scenes[i].limit_b;
             else if (camera.transform.position.y >= camera_t) far_scenes[i].bk_f_y = far_scenes[i].limit_t;

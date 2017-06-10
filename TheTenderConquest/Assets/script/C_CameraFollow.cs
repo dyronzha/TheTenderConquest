@@ -5,7 +5,8 @@ public class C_CameraFollow : MonoBehaviour {
     //視窗內人物移動邊界變數
     private Transform right_border, left_border, right_limit, left_limit = null;
     private float BtwTop, BtwBottom, btwfront, btwback, f_trans_time;
-    private bool TouchTop, TouchDown, _b_right,_b_left,_b_camera_fixed,b_is_hurt;
+    private bool TouchTop, TouchDown,_b_camera_fixed,b_is_hurt;
+    public bool _b_left, _b_right;
     public bool y_axis_change;
     public int i_far_scene_num =0;
     public GameObject[] far_scene = new GameObject[2];
@@ -256,7 +257,7 @@ public class C_CameraFollow : MonoBehaviour {
               } 
             }
         else if (playertop.x <= left_limit.position.x && target.transform.localScale.x > 0) {
-                _b_camera_fixed = false;
+                _b_camera_fixed = true;
                 _b_right = true;
             }
 

@@ -7,31 +7,31 @@ public class C_EnemyBase : MonoBehaviour {
     public LayerMask mask;
     Vector3 respawn_location_vec3;
     Animator enemy_animator;
-    Transform t_attackarea, t_detect;
+    Transform t_detect;
     RaycastHit2D ray_seeplayer,ray_detect;
     GameObject player;
     CircleCollider2D hit_area;
-    bool b_toofar, b_attack, b_to_right, b_is_hurt;
+    bool b_toofar, b_to_right, b_is_hurt, b_attack, b_both_attack;
     public int i_HP,i_mode;
     float f_distance, f_ramble_left, f_ramble_right, f_ramble_wait, f_face_way,f_atk_blank, f_away_dir, f_hurt_time;
     public float f_ramble_dis, f_speed,f_trace_dis,f_sight_dis,f_player_dis;
     bool b_see_it,b_ramble_return, b_hit_away;
     AudioSource audio_source;
     public AudioClip[] hurt_sound = new AudioClip[3];
+    public bool b_attacking;
     // Use this for initialization
     void Awake()
     {
         enemy_body = gameObject.GetComponent<Rigidbody2D>();
         respawn_location_vec3 = transform.position;
         enemy_animator = gameObject.GetComponent<Animator>();
-        t_attackarea = gameObject.transform.GetChild(1);
         t_detect = gameObject.transform.GetChild(2);
         player = GameObject.Find("player");
         hit_area = gameObject.GetComponent<CircleCollider2D>();
         f_ramble_left = respawn_location_vec3.x - f_ramble_dis;
         f_ramble_right = respawn_location_vec3.x + f_ramble_dis;
         b_see_it = b_ramble_return = false;
-        b_toofar = b_attack = b_to_right = b_is_hurt = b_hit_away = false;
+        b_toofar = b_attack = b_to_right = b_is_hurt = b_hit_away = b_both_attack = b_attacking =   false;
         f_face_way = transform.localScale.x;
         f_ramble_wait = f_atk_blank = f_away_dir = f_hurt_time = 0.0f;
         audio_source = GetComponent<AudioSource>();
@@ -181,24 +181,39 @@ public class C_EnemyBase : MonoBehaviour {
     }
 
     public void Attackarea(){
+        Debug.Log("enemy attack detect");
+        if (b_is_hurt) return;
+        b_attacking = true;
         hit_area.enabled = true;
     }
 
     void AttackOver() {
         hit_area.enabled = false;
+        b_attacking = false;
         enemy_animator.SetBool("attack_over",true);
         //b_attack = false;
     }
 
+    public void BothAttack() {
+        b_both_attack = false;
+        hit_area.enabled = false;
+        b_attacking = false;
+        enemy_animator.SetBool("attack_over", true);
+        f_atk_blank = 1.7f;
+    }
+
     public void GetHurt(bool hit_away, float dir) {
+        Debug.Log("enemy get hurt");
         int random = Random.Range(0,2);
         audio_source.PlayOneShot(hurt_sound[random]);
         i_HP--;
         b_is_hurt = true;
+        b_attacking = false;
         b_hit_away = hit_away;
         hit_area.enabled = false;
         enemy_animator.SetBool("attack_over", true);
-        f_atk_blank = 0.0f;
+        enemy_animator.Play("Empty");
+        f_atk_blank = 1.0f;
         if (hit_away) {
             f_away_dir = dir;
             enemy_body.velocity = new Vector3(10.0f*f_away_dir,0.0f,0.0f);
@@ -241,10 +256,20 @@ public class C_EnemyBase : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Player" && b_attack && !b_is_hurt)
+        Debug.Log("enemy trigger");
+        if (collision.tag == "Player" && b_attacking)
         {
+            Debug.Log("enemy attack act");
             hit_area.enabled = false;
-            collision.gameObject.SendMessage("GetHurt",transform.localScale.x);
+            if (b_both_attack)
+            {
+                b_both_attack = false;
+                hit_area.enabled = false;
+                Debug.Log("enemy both attack");
+                return;
+            }
+            
+            collision.gameObject.SendMessage("GetHurt", transform.localScale.x);
         }
     }
 

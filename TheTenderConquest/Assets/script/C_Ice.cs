@@ -17,7 +17,7 @@ public class C_Ice : MonoBehaviour {
     }
 
     void OnTriggerEnter2D(Collider2D collider) {
-        if(collider.tag=="player") player.SendMessage("GetHurt", collider.transform.localScale.x);
+        if(collider.tag=="Player") player.SendMessage("GetHurt", collider.transform.localScale.x);
 
     }
     private void OnTriggerExit2D(Collider2D collision)

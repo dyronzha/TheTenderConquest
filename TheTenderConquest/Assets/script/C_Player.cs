@@ -42,7 +42,7 @@ public class C_Player : MonoBehaviour {
     protected C_UIHP HP_ui;
     public string s_name = "player";
     public Transform player_tra;
-    private bool b_hurting,b_attack_enable,b_play_ani, b_is_attack;
+    private bool b_hurting,b_attack_enable,b_play_ani, b_is_attack, b_both_attack;
     private float f_hurting_time,f_hurt_dir,f_attack_time;
     private int i_hit_number;
     C_PlayerAniEvent player_ani;
@@ -92,7 +92,7 @@ public class C_Player : MonoBehaviour {
         Stick_col = transform.Find("Stick_col");
         Stick_col.gameObject.SetActive(false);
         b_AOE_has = false;
-        b_hurting = b_play_ani = b_is_attack = false;
+        b_hurting = b_play_ani = b_is_attack = b_both_attack = false;
         b_attack_enable = true;
         f_hurting_time = f_attack_time = 0;
         i_hit_number = 0;
@@ -221,7 +221,7 @@ public class C_Player : MonoBehaviour {
 
     public void Teleport()
     {
-        Debug.Log(b_use_skill);
+        //Debug.Log(b_use_skill);
         if (!b_use_skill) return;
         if ((!hit_cilling_ray || !hit_ground_ray) && !b_isground) return;
             // //按鍵後產生鏡子和虛像，並紀錄用過技能
@@ -245,7 +245,6 @@ public class C_Player : MonoBehaviour {
     {
         if (!b_upside && b_jump)
         {
-            Debug.Log("jump");
             player_ani.JumpBegin();
             player_rig.velocity = new Vector2(player_rig.velocity.x, f_jump_speed);
             //b_jump = false;
@@ -374,9 +373,8 @@ public class C_Player : MonoBehaviour {
         }
         if (b_attack_enable && b_play_ani)
         {
-            Debug.Log("continue " + i_hit_number);
-            b_is_attack = true;
-            player_ani.StickSwingSound(i_hit_number);
+            //Debug.Log("continue " + i_hit_number);
+
             if (i_hit_number < 1)
             {
                 player_spine_animator.Play("attack0", 1);
@@ -388,7 +386,7 @@ public class C_Player : MonoBehaviour {
             }
             else if(i_hit_number <2)
             {
-                Debug.Log("hit1");
+                //Debug.Log("hit1");
                 player_spine_animator.Play("attack1", 1);
                 f_attack_time = 0;
                 i_hit_number++;
@@ -398,7 +396,7 @@ public class C_Player : MonoBehaviour {
             }
             else if (i_hit_number < 3)
             {
-                Debug.Log("hit3");
+                //Debug.Log("hit3");
                 f_attack_time = 0;
                 b_hit_away = true;
                 player_spine_animator.Play("attack2", 1);
@@ -410,19 +408,24 @@ public class C_Player : MonoBehaviour {
         }
     }
     public void NormalAtkDetect() {
+        //Debug.Log("player attack detect");
+        if (b_hurting) return;
+        player_ani.StickSwingSound(i_hit_number);
+        b_is_attack = true;
         Stick_col.gameObject.SetActive(true);
     } 
 
     public void NormalAttackOver() {
-        Debug.Log("over");
+        //Debug.Log("over");
         f_attack_time = 0.18f;
         if (b_hit_away) {
-            Debug.Log("end");
+            //Debug.Log("end");
             f_attack_time = 0.5f;
             b_hit_away = false;
         } 
         b_attack_enable = true;
         b_is_attack = false;
+        player_spine_animator.SetBool("attackover", true);
         Stick_col.gameObject.SetActive(false);
     }
 
@@ -445,7 +448,6 @@ public class C_Player : MonoBehaviour {
     void PlayerRespawn()
     {
         f_dietime += Time.deltaTime;
-        Debug.Log(f_dietime);
         if (f_dietime > 1.3f)
         {
             this.player_rig.velocity = new Vector2(0, 0);
@@ -475,26 +477,41 @@ public class C_Player : MonoBehaviour {
         AOE_col.gameObject.SetActive(false);
     }
 
-   
 
+    public void BothAttack() {
+        if (b_both_attack) return;
+        b_both_attack = true;
+    }
 
     //受傷
     public void GetHurt(float hurt_dir)
     {
+        //Debug.Log("player get hurt");
+        Stick_col.gameObject.SetActive(false);
+        player_spine_animator.SetBool("attackover", true);
         b_player_controll = false;
-        player_spine_animator.Play("hit2");
-        i_hp --;
-        HP_ui.PresentHp(i_hp);
-        b_hurting = true;
-        f_hurt_dir = hurt_dir;
-        Debug.Log("hurt");
-        player_rig.velocity = new Vector2(-5.0f*hurt_dir,10.0f);
-        transform.localScale = new Vector3(Mathf.Sign(hurt_dir) ,1.0f,1.0f);
+            player_spine_animator.Play("hit2");
+            i_hp--;
+            HP_ui.PresentHp(i_hp);
+            b_hurting = true;
+            b_is_attack = false;
+            f_hurt_dir = hurt_dir;
+            //Debug.Log("hurt");
+        if (!b_upside)
+        {
+            player_rig.velocity = new Vector2(-5.0f * hurt_dir, 10.0f);
+            transform.localScale = new Vector3(Mathf.Sign(hurt_dir), 1.0f, 1.0f);
+        }
+        else {
+            player_rig.velocity = new Vector2(-5.0f * hurt_dir, -10.0f);
+            transform.localScale = new Vector3(Mathf.Sign(hurt_dir), -1.0f, 1.0f);
+        }
     }
     //受擊傷害時間
     public void HurtTime() {
         f_hurting_time += Time.deltaTime;
-        player_rig.velocity += new Vector2(10.0f *f_hurt_dir* Time.deltaTime, -20.0f*Time.deltaTime);  //f_hurt_dir是被擊的反方向
+        if(!b_upside)player_rig.velocity += new Vector2(10.0f *f_hurt_dir* Time.deltaTime, -20.0f*Time.deltaTime);  //f_hurt_dir是被擊的反方向
+        else player_rig.velocity += new Vector2(10.0f * f_hurt_dir * Time.deltaTime, 20.0f * Time.deltaTime);
         if (f_hurting_time > 0.5f) {
             b_hurting = false;
             b_player_controll = true;
@@ -555,15 +572,24 @@ public class C_Player : MonoBehaviour {
             i_hp_tmp = i_hp;
             b_is_save = true;
             C_SceneManager.SceneManger.GetComponent<C_SceneManager>().ChangeSavePoint();
-            Debug.Log(b_is_save);
+            //Debug.Log(b_is_save);
             Destroy(collider.gameObject);
         }
         else if (collider.tag == "enemy") {
             //if(b_AOE_has) collider.gameObject.SendMessage("GetHurt");
             if (b_is_attack) {
-                collider.gameObject.GetComponent<C_EnemyBase>().GetHurt(b_hit_away, transform.localScale.x);
+                if (!collider.GetComponent<C_Enemy>().b_attacking)
+                {
+                    //Debug.Log("player attack");
+                    collider.gameObject.GetComponent<C_Enemy>().GetHurt(b_hit_away, transform.localScale.x);                }
+                else {
+                    //Debug.Log("player both attack");
+                    b_both_attack = true;
+                    Stick_col.gameObject.SetActive(false);
+                    player_ani.BothAttackSound();
+                    collider.gameObject.GetComponent<C_Enemy>().BothAttack();
+                }
                 b_is_attack = false;
-                Debug.Log("enemy_hurt");
             } 
 
         }

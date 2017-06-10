@@ -7,7 +7,7 @@ public class C_SceneManager : MonoBehaviour {
     C_CameraFollow camera_follow;
     public int i_save_point;
     public GameObject  O_show_plate21, O_enemy,O_plate10, O_show_plate11,O_record3,O_step_ice,O_step_enemy,O_barrier;
-    GameObject O_camera, O_player;
+    public GameObject O_camera, O_player;
     C_Player c_player;
     bool b_enemy_switch;
     public bool b_times_up, b_camera_busy, b_player_controll;

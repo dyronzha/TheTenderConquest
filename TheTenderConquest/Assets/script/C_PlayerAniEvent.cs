@@ -6,6 +6,7 @@ public class C_PlayerAniEvent : MonoBehaviour {
     C_Player player;
     public AudioClip[] step_sound = new AudioClip[5];
     public AudioClip[] stick_swing_sound = new AudioClip[3];
+    public AudioClip both_attack_sound;
     public AudioClip fall_sound, jump_sound;
     public AudioSource audio_source;
     int run_index;
@@ -57,6 +58,9 @@ public class C_PlayerAniEvent : MonoBehaviour {
     public void JumpBegin() {
         //Debug.Log("jump sound");
         audio_source.PlayOneShot(jump_sound);
+    }
+    public void BothAttackSound() {
+        audio_source.PlayOneShot(both_attack_sound);
     }
     public void StickSwingSound(int num) {
         switch (num)
