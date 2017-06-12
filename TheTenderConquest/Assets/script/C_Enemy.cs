@@ -18,6 +18,7 @@ public class C_Enemy : MonoBehaviour {
     bool b_see_it, b_ramble_return, b_hit_away;
     AudioSource audio_source;
     public AudioClip[] hurt_sound = new AudioClip[3];
+    public AudioClip attack_sound, howl_sound;
     public bool b_attacking, b_ground_uncheck;
     Vector3 vplayer_pos;
     // Use this for initialization
@@ -110,6 +111,7 @@ public class C_Enemy : MonoBehaviour {
                         b_attack = true;
                         enemy_animator.SetBool("walk", false);
                         enemy_animator.SetBool("attack_over", false);
+                        //audio_source.PlayOneShot(attack_sound);
                         enemy_animator.Play("EnemyAttack");
                         return (true);
                     }
@@ -150,6 +152,7 @@ public class C_Enemy : MonoBehaviour {
                         b_attack = true;
                         enemy_animator.SetBool("walk", false);
                         enemy_animator.SetBool("attack_over", false);
+                       // audio_source.PlayOneShot(attack_sound);
                         enemy_animator.Play("EnemyAttack");
                         return (true);
                     }
@@ -272,9 +275,14 @@ public class C_Enemy : MonoBehaviour {
 
     }
 
+    public void Howl() {
+        audio_source.PlayOneShot(howl_sound);
+    }
+
     public void Attackarea()
     {
         Debug.Log("enemy attack detect");
+        audio_source.PlayOneShot(attack_sound);
         if (b_is_hurt) return;
         b_attacking = true;
         attack_area.enabled = true;

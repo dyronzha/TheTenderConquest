@@ -255,7 +255,8 @@ public class C_Player : MonoBehaviour {
         }
         else if (b_upside && b_jump)
         {
-            player_ani.JumpBegin();
+            if (!b_jump_sound) player_ani.JumpBegin();
+            b_jump_sound = true;
             player_rig.velocity = new Vector2(player_rig.velocity.x, -f_jump_speed);
             player_spine_animator.SetBool("jumpover", false);
         }

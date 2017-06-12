@@ -18,6 +18,7 @@ public class C_EnemyAniEvent : MonoBehaviour {
 
     void ChangeType() {
         enemy_animator.SetBool("attack_type", true);
+        transform.GetComponentInParent<C_Enemy>().Howl();
     }
     void ChangeTypeOver() {
         transform.GetComponentInParent<C_Enemy>().PreAttack();
