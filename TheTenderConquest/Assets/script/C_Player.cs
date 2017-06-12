@@ -65,6 +65,7 @@ public class C_Player : MonoBehaviour {
     private Vector3 respawn_position_vec3;
     private float f_dietime = 0;
     SkeletonAnimation skeleton_animation;
+    private GameObject FloatStone;
     // Use this for initialization
     void Awake()
     {
@@ -96,6 +97,7 @@ public class C_Player : MonoBehaviour {
         b_attack_enable = true;
         f_hurting_time = f_attack_time = 0;
         i_hit_number = 0;
+        FloatStone = GameObject.Find("FloatStone");
     }
 
     void Start()
@@ -461,6 +463,7 @@ public class C_Player : MonoBehaviour {
             f_dietime = 0;
             O_camera.SendMessage("ResetPos");
             if (f_gravity < 0) f_gravity *= -1;
+            FloatStone.SendMessage("ResetPosition");
         }
     }
 
