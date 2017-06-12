@@ -13,12 +13,13 @@ public class C_Enemy : MonoBehaviour {
     CircleCollider2D attack_area;
     bool b_toofar, b_to_right, b_is_hurt, b_attack, b_both_attack, b_pre_attack;
     public int i_HP, i_mode;
-    float f_distance, f_ramble_left, f_ramble_right, f_ramble_wait, f_face_way, f_atk_blank, f_away_dir, f_hurt_time;
-    public float f_ramble_dis, f_speed, f_trace_dis, f_sight_dis, f_player_dis;
+    float f_distance, f_ramble_left, f_ramble_right, f_ramble_wait, f_face_way, f_atk_blank, f_away_dir, f_hurt_time, f_die_time;
+    public float f_ramble_dis, f_run_speed, f_walk_speed, f_trace_dis, f_sight_dis, f_player_dis, f_player_away;
     bool b_see_it, b_ramble_return, b_hit_away;
     AudioSource audio_source;
     public AudioClip[] hurt_sound = new AudioClip[3];
-    public bool b_attacking;
+    public bool b_attacking, b_ground_uncheck;
+    Vector3 vplayer_pos;
     // Use this for initialization
     void Awake()
     {
@@ -33,15 +34,26 @@ public class C_Enemy : MonoBehaviour {
         b_see_it = b_ramble_return = false;
         b_toofar = b_attack = b_to_right = b_is_hurt = b_hit_away = b_both_attack = b_attacking = b_pre_attack =  false;
         f_face_way = transform.localScale.x;
-        f_ramble_wait = f_atk_blank = f_away_dir = f_hurt_time = 0.0f;
+        f_ramble_wait = f_atk_blank = f_away_dir = f_hurt_time = f_die_time =  0.0f;
         audio_source = GetComponent<AudioSource>();
+        vplayer_pos = Vector3.zero;
     }
 
     // Update is called once per frame
     void Update()
     {
         //碰到玩家的raycast
-        if (!b_see_it) b_see_it = ray_seeplayer = Physics2D.Raycast(transform.position, (new Vector3(transform.localScale.x, 0, 0) + transform.up * 0.15f), f_sight_dis, mask);
+        if (!b_see_it) {
+            b_see_it = ray_seeplayer = Physics2D.Raycast(transform.position, (new Vector3(transform.localScale.x, 0, 0) + transform.up * 0.2f), f_sight_dis, mask);
+            b_ground_uncheck = false;
+            if(b_see_it)vplayer_pos = ray_seeplayer.transform.position;
+        } 
+        else {
+            if (ray_seeplayer.transform == null) {
+                b_see_it = false;
+                b_ground_uncheck = true;
+            } 
+        }
         Debug.DrawLine(transform.position, transform.position + (new Vector3(transform.localScale.x, 0, 0) + transform.up * 0.2f).normalized * f_sight_dis);
         if (!IsDie())
         {
@@ -65,7 +77,7 @@ public class C_Enemy : MonoBehaviour {
     //追逐視野內玩家
     bool seePlay()
     {
-        Vector3 walkto_vec3;
+        Vector3 walkto_vec3 = new Vector3(0,0,0);
         //判斷有無碰到地板
         ray_detect = Physics2D.Linecast(transform.position, t_detect.transform.position, 1 << LayerMask.NameToLayer("ground"));
         f_distance = Mathf.Abs(transform.position.x - respawn_location_vec3.x);
@@ -78,44 +90,89 @@ public class C_Enemy : MonoBehaviour {
             f_atk_blank = 0;
             b_attack = false;
         }
-        if (b_see_it && ray_detect)
+
+        if (!b_ground_uncheck)
         {
-            f_player_dis = Vector2.Distance(transform.position, ray_seeplayer.transform.position);
-            if (!b_toofar && f_player_dis < 10.0f)
+            if (b_see_it && ray_detect )
             {
-                enemy_animator.SetBool("see_player", true);
-                if (!b_pre_attack) return true;
-                walkto_vec3 = new Vector3(ray_seeplayer.transform.position.x - transform.position.x, 0, 0);
-                if (!b_attack) transform.localScale = new Vector3(-1.0f * Mathf.Sign(transform.position.x - ray_seeplayer.transform.position.x), 1, 1);
-                if (Mathf.Abs((ray_seeplayer.transform.position.x - transform.position.x)) <2.0f && !b_attack)
+                f_player_dis = Vector2.Distance(transform.position, ray_seeplayer.transform.position);
+                if (!b_toofar && f_player_dis < f_player_away)
                 {
-                    Debug.Log("enemy attack");
-                    if (b_is_hurt) return true;
-                    enemy_body.velocity = new Vector3(0, 0, 0);
-                    b_attack = true;
-                    enemy_animator.SetBool("walk", false);
-                    enemy_animator.SetBool("attack_over", false);
-                    enemy_animator.Play("EnemyAttack");
-                    return (true);
+                    enemy_animator.SetBool("see_player", true);
+                    if (!b_pre_attack) return true;
+                    walkto_vec3 = new Vector3(ray_seeplayer.transform.position.x - transform.position.x, 0, 0);
+                    if (!b_attack) transform.localScale = new Vector3(-1.0f * Mathf.Sign(transform.position.x - ray_seeplayer.transform.position.x), 1, 1);
+                    if (Mathf.Abs((ray_seeplayer.transform.position.x - transform.position.x)) < 2.0f && !b_attack)
+                    {
+                        Debug.Log("enemy attack");
+                        if (b_is_hurt) return true;
+                        enemy_body.velocity = new Vector3(0, 0, 0);
+                        b_attack = true;
+                        enemy_animator.SetBool("walk", false);
+                        enemy_animator.SetBool("attack_over", false);
+                        enemy_animator.Play("EnemyAttack");
+                        return (true);
+                    }
+                    enemy_animator.SetBool("walk", true);
+                    enemy_body.velocity = new Vector3(walkto_vec3.normalized.x * f_run_speed * 1.4f, enemy_body.velocity.y, 0);
+                    return true;
                 }
-                enemy_animator.SetBool("walk", true);
-                enemy_body.velocity = new Vector3(walkto_vec3.normalized.x * f_speed * 1.4f, enemy_body.velocity.y, 0);
-                return true;
+                else
+                {
+                    Debug.Log("too far");
+                    //transform.localScale = new Vector3(-1.0f * Mathf.Sign(transform.position.x - respawn_location_vec3.x), 1, 1);
+                    b_see_it = false;
+                    return false;
+                }
             }
             else
             {
-                Debug.Log("too far");
-                //transform.localScale = new Vector3(-1.0f * Mathf.Sign(transform.position.x - respawn_location_vec3.x), 1, 1);
+                //Debug.Log("ground undetext");
                 b_see_it = false;
                 return false;
             }
         }
-        else
-        {
-            Debug.Log("ground undetext");
-            b_see_it = false;
-            return false;
+        else {
+            if (b_see_it&&(ray_detect || b_ground_uncheck))
+            {
+                f_player_dis = Vector2.Distance(transform.position, vplayer_pos);
+                if (!b_toofar && f_player_dis < f_player_away)
+                {
+                    enemy_animator.SetBool("see_player", true);
+                    if (!b_pre_attack) return true;
+                    walkto_vec3 = new Vector3(vplayer_pos.x - transform.position.x, 0, 0);
+                    if (!b_attack) transform.localScale = new Vector3(-1.0f * Mathf.Sign(transform.position.x - vplayer_pos.x), 1, 1);
+                    if (Mathf.Abs((vplayer_pos.x - transform.position.x)) < 2.0f && !b_attack)
+                    {
+                        Debug.Log("enemy attack");
+                        if (b_is_hurt) return true;
+                        enemy_body.velocity = new Vector3(0, 0, 0);
+                        b_attack = true;
+                        enemy_animator.SetBool("walk", false);
+                        enemy_animator.SetBool("attack_over", false);
+                        enemy_animator.Play("EnemyAttack");
+                        return (true);
+                    }
+                    enemy_animator.SetBool("walk", true);
+                    enemy_body.velocity = new Vector3(walkto_vec3.normalized.x * f_run_speed * 1.4f, enemy_body.velocity.y, 0);
+                    return true;
+                }
+                else
+                {
+                    Debug.Log("too far");
+                    //transform.localScale = new Vector3(-1.0f * Mathf.Sign(transform.position.x - respawn_location_vec3.x), 1, 1);
+                    b_see_it = false;
+                    return false;
+                }
+            }
+            else
+            {
+                //Debug.Log("ground undetext");
+                b_see_it = false;
+                return false;
+            }
         }
+
     }
 
     void behaviorMode()
@@ -128,6 +185,7 @@ public class C_Enemy : MonoBehaviour {
             b_pre_attack = false;
             enemy_animator.SetBool("attack_type", false);
             enemy_animator.SetBool("see_player", false);
+            f_ramble_wait = 0.0f;
         }
         switch (i_mode)
         {
@@ -151,7 +209,7 @@ public class C_Enemy : MonoBehaviour {
                     walkto_vec3 = Vector3.zero;
                     enemy_animator.SetBool("walk", false);
                 }
-                enemy_body.velocity = new Vector3(walkto_vec3.normalized.x * f_speed, enemy_body.velocity.y, 0);
+                enemy_body.velocity = new Vector3(walkto_vec3.normalized.x * f_walk_speed, enemy_body.velocity.y, 0);
                 break;
 
             case 1:
@@ -195,7 +253,7 @@ public class C_Enemy : MonoBehaviour {
                     }
                     enemy_animator.SetBool("walk", true);
                 }
-                enemy_body.velocity = new Vector3(walkto_vec3.normalized.x * f_speed, enemy_body.velocity.y, 0);
+                enemy_body.velocity = new Vector3(walkto_vec3.normalized.x * f_walk_speed, enemy_body.velocity.y, 0);
                 break;
         }
     }
@@ -241,7 +299,9 @@ public class C_Enemy : MonoBehaviour {
 
     public void GetHurt(bool hit_away, float dir)
     {
-        //Debug.Log("enemy get hurt");
+        Debug.Log("enemy get hurt");
+        if (i_HP <= 0) return;
+        enemy_animator.Play("Hurt");
         int random = Random.Range(0, 2);
         audio_source.PlayOneShot(hurt_sound[random]);
         i_HP--;
@@ -250,9 +310,9 @@ public class C_Enemy : MonoBehaviour {
         b_hit_away = hit_away;
         attack_area.enabled = false;
         enemy_animator.SetBool("attack_over", true);
-        enemy_animator.Play("Emepty");
+        //enemy_animator.Play("Emepty");
         f_atk_blank = 1.0f;
-        if (!b_see_it) transform.localScale = new Vector3(-1.0f*f_face_way,1,1);
+        if (!b_see_it) transform.localScale = new Vector3(-dir,1,1);
         if (hit_away)
         {
             f_away_dir = dir;
@@ -263,7 +323,7 @@ public class C_Enemy : MonoBehaviour {
 
     public void PreAttack() {
         b_pre_attack = true;
-        enemy_animator.SetBool("attack_type",true);
+        //enemy_animator.SetBool("attack_type",true);
     }
 
     void HurtTime()
@@ -289,8 +349,17 @@ public class C_Enemy : MonoBehaviour {
 
     bool IsDie()
     {
+        float die_time = 0.3f;
         if (i_HP > 0) return false;
-        else return false;
+        else {
+            if (b_hit_away) {
+                die_time = 0.5f;
+                if (Mathf.Abs(enemy_body.velocity.x) > 0.3f) enemy_body.velocity += new Vector2(-f_away_dir * 10.0f * Time.deltaTime, 0.0f);
+            } 
+            if (!Wait(ref f_die_time, die_time)) return true;
+            else enemy_animator.Play("Die");
+            return true;
+        } 
     }
 
     //四邊形面積

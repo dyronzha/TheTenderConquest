@@ -57,6 +57,7 @@ public class C_PlayerAniEvent : MonoBehaviour {
 
     public void JumpBegin() {
         //Debug.Log("jump sound");
+        Debug.Log("jump");
         audio_source.PlayOneShot(jump_sound);
     }
     public void BothAttackSound() {

@@ -17,7 +17,7 @@ public class C_InfiniteFar : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        transform.position = new Vector3(O_camera.transform.position.x + 4.8f, transform.position.y, transform.position.z); 
-        if(c_camera.y_axis_change) transform.position = new Vector3(transform.position.x, O_camera.transform.position.y+1.9f, transform.position.z);
+        //transform.position = new Vector3(O_camera.transform.position.x + 4.8f, transform.position.y, transform.position.z); 
+        //if(c_camera.y_axis_change) transform.position = new Vector3(transform.position.x, O_camera.transform.position.y+1.9f, transform.position.z);
     }
 }

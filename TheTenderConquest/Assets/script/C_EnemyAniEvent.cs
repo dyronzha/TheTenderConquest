@@ -17,6 +17,9 @@ public class C_EnemyAniEvent : MonoBehaviour {
 	}
 
     void ChangeType() {
+        enemy_animator.SetBool("attack_type", true);
+    }
+    void ChangeTypeOver() {
         transform.GetComponentInParent<C_Enemy>().PreAttack();
     }
 
@@ -28,5 +31,8 @@ public class C_EnemyAniEvent : MonoBehaviour {
         transform.GetComponentInParent<C_Enemy>().AttackOver();
     }
 
+    void Die() {
+        Destroy(transform.parent.gameObject);
+    }
 
 }

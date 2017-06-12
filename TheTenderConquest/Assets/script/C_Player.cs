@@ -49,7 +49,7 @@ public class C_Player : MonoBehaviour {
 
     //玩家運動變數
     private float f_speed = 0.0f;
-    private bool b_jump = false;
+    private bool b_jump, b_jump_sound = false;
     private float f_jump_speed = 0.0f;
     Vector3 last_position_vec3;
     Vector2 jump_vec2;
@@ -245,16 +245,16 @@ public class C_Player : MonoBehaviour {
     {
         if (!b_upside && b_jump)
         {
-            player_ani.JumpBegin();
+            if(!b_jump_sound)player_ani.JumpBegin();
+            b_jump_sound = true;
             player_rig.velocity = new Vector2(player_rig.velocity.x, f_jump_speed);
-            //b_jump = false;
+            //Debug.Log("jump " + player_rig.velocity.x);
             player_spine_animator.SetBool("jumpover", false);
         }
         else if (b_upside && b_jump)
         {
             player_ani.JumpBegin();
             player_rig.velocity = new Vector2(player_rig.velocity.x, -f_jump_speed);
-            //b_jump = false;
             player_spine_animator.SetBool("jumpover", false);
         }
     }
@@ -262,10 +262,17 @@ public class C_Player : MonoBehaviour {
     {
         if (!b_upside)
         {
-            if (player_rig.velocity.y <= 0) player_spine_animator.SetBool("jumpchange",true);
+            if (player_rig.velocity.y <= 0) {
+                player_spine_animator.SetBool("jumpchange", true);
+                b_jump_sound = false;
+            } 
         }
         else {
-            if (player_rig.velocity.y >= 0) player_spine_animator.SetBool("jumpchange", true);
+            if (player_rig.velocity.y >= 0)
+            {
+                player_spine_animator.SetBool("jumpchange", true);
+                b_jump_sound = false;
+            } 
         }
     }
     void JumpDetect()
@@ -322,8 +329,9 @@ public class C_Player : MonoBehaviour {
         {
 
             float temp = player_rig.velocity.x;
-            if (Mathf.Abs(temp) > 0.2f) temp += -30.0f*transform.localScale.x* Time.deltaTime*0.5f;
+            if (Mathf.Abs(temp) > 0.2f) temp += -30.0f*Mathf.Sign(temp) * Time.deltaTime*0.5f;
             else temp = 0.0f;
+            //Debug.Log("temp  " + temp);
             player_rig.velocity = new Vector2(temp, player_rig.velocity.y);
             player_spine_animator.SetBool("walk", false);
             
@@ -338,7 +346,8 @@ public class C_Player : MonoBehaviour {
         float angle;
         v3 = Camera.main.WorldToScreenPoint(transform.position);  //自己位置轉成螢幕座標
         v2 = new Vector2(v3.x, v3.y); //再轉乘二維向量
-        v3_position = Camera.main.WorldToScreenPoint(transform.position + new Vector3(transform.lossyScale.x, 0.7f, 0));
+        if(!b_upside) v3_position = Camera.main.WorldToScreenPoint(transform.position + new Vector3(transform.lossyScale.x, 0.7f, 0));
+        else v3_position = Camera.main.WorldToScreenPoint(transform.position + new Vector3(transform.lossyScale.x, -1.0f, 0));
         v2_position = new Vector2(v3_position.x, v3_position.y);
         input = new Vector2(Input.mousePosition.x, Input.mousePosition.y); //紀錄滑鼠位置
         Vector2 normalized = ((input - v2_position)).normalized;  //滑鼠與自己的向量差正規化
@@ -361,12 +370,12 @@ public class C_Player : MonoBehaviour {
         }
         if (Input.GetMouseButtonDown(0))
         {
-            if (f_attack_time > 0.07f || i_hit_number==0) {
+            if (f_attack_time > 0.03f || i_hit_number==0) {
                 b_play_ani = true;
             } 
         }
         else {
-            if (f_attack_time > 0.4f && !b_play_ani) {
+            if (f_attack_time > 0.3f && !b_play_ani) {
                 player_spine_animator.SetBool("attackover", true);
                 i_hit_number = 0;
             } 
@@ -420,7 +429,7 @@ public class C_Player : MonoBehaviour {
         f_attack_time = 0.18f;
         if (b_hit_away) {
             //Debug.Log("end");
-            f_attack_time = 0.5f;
+            f_attack_time = 0.5f; //因為是最後一個
             b_hit_away = false;
         } 
         b_attack_enable = true;
@@ -434,8 +443,9 @@ public class C_Player : MonoBehaviour {
         GameObject vbullet;
         Rigidbody2D vrigidbody;
         //算向量差與x軸的夾角的餘角(因為是讓子彈原是90度開始轉)
-            vbullet = Instantiate(O_bullet, transform.position + new Vector3(transform.lossyScale.x, 0.7f, 0), Quaternion.Euler(0f, 0f, 0f)) as GameObject;
-            vrigidbody = vbullet.GetComponent<Rigidbody2D>();
+           if(!b_upside) vbullet = Instantiate(O_bullet, transform.position + new Vector3(transform.lossyScale.x, 0.7f, 0), Quaternion.Euler(0f, 0f, 0f)) as GameObject;
+           else vbullet = Instantiate(O_bullet, transform.position + new Vector3(transform.lossyScale.x, -1.0f, 0), Quaternion.Euler(0f, 0f, 0f)) as GameObject;
+        vrigidbody = vbullet.GetComponent<Rigidbody2D>();
             vrigidbody.velocity = new Vector2(normalied.x * 25, normalied.y * 25);
             vbullet.transform.rotation = Quaternion.Euler(0f, 0f, angle);
             i_hp--;
@@ -486,7 +496,7 @@ public class C_Player : MonoBehaviour {
     //受傷
     public void GetHurt(float hurt_dir)
     {
-        //Debug.Log("player get hurt");
+        Debug.Log("player get hurt");
         Stick_col.gameObject.SetActive(false);
         player_spine_animator.SetBool("attackover", true);
         b_player_controll = false;
@@ -496,7 +506,7 @@ public class C_Player : MonoBehaviour {
             b_hurting = true;
             b_is_attack = false;
             f_hurt_dir = hurt_dir;
-            //Debug.Log("hurt");
+            Debug.Log("hurt");
         if (!b_upside)
         {
             player_rig.velocity = new Vector2(-5.0f * hurt_dir, 10.0f);
@@ -509,6 +519,7 @@ public class C_Player : MonoBehaviour {
     }
     //受擊傷害時間
     public void HurtTime() {
+        Debug.Log("hurt time");
         f_hurting_time += Time.deltaTime;
         if(!b_upside)player_rig.velocity += new Vector2(10.0f *f_hurt_dir* Time.deltaTime, -20.0f*Time.deltaTime);  //f_hurt_dir是被擊的反方向
         else player_rig.velocity += new Vector2(10.0f * f_hurt_dir * Time.deltaTime, 20.0f * Time.deltaTime);

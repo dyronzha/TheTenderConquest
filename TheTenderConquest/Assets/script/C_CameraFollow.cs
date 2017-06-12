@@ -69,7 +69,7 @@ public class C_CameraFollow : MonoBehaviour {
         playerbottom = sp.bounds.min;
         playertop = sp.bounds.max;
         //跟隨玩家或固定
-        if (!b_static)if (!Input.GetKey(KeyCode.Q)) FollowPlayer2();
+        if (!b_static) FollowPlayer2();
         
         //限制視窗可移動範圍
         transform.position = new Vector3(Mathf.Clamp(transform.position.x, range_x.x, range_x.y), Mathf.Clamp(transform.position.y, range_y.x, range_y.y), transform.position.z);
@@ -83,18 +83,25 @@ public class C_CameraFollow : MonoBehaviour {
         f_trans_time = temp_time;
     }
 
-    public bool SetScreen2(Vector3 pos, float wait_time)
+    public bool SetScreen2(Vector3 pos)
     {
         if(!b_static) temp_vec3 = transform.position;
         b_static = true;
         Vector3 diff = (pos - transform.position).normalized;
+        if (transform.position.y < range_y.x || transform.position.y > range_y.y || transform.position.x < range_x.x || transform.position.x > range_x.y) {
+            Debug.Log("out range");
+            return false;
+        } 
         if (Vector2.Distance(pos, transform.position) > 1.0f) {
             transform.position += 10.0f * diff*Time.deltaTime;
+            Debug.Log("camera move " + pos + " " + temp_vec3);
+            static_fixed = (temp_vec3 - transform.position).normalized;
             return true;
         } 
         else{
-           // transform.position = pos;
-            static_fixed = (temp_vec3 - transform.position).normalized;
+            // transform.position = pos;
+            Debug.Log("camera move end ");
+             static_fixed = (temp_vec3 - transform.position).normalized;
             return false;
         } 
     }
@@ -105,6 +112,7 @@ public class C_CameraFollow : MonoBehaviour {
         if (Vector3.Distance(temp_vec3, transform.position) > 0.5f)
         {
             transform.position += static_fixed * Time.deltaTime * 10.0f;
+            Debug.Log("camera reset " + static_fixed);
             return true;
         }
         else {

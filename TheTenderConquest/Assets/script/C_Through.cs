@@ -21,11 +21,11 @@ public class C_Through : MonoBehaviour {
 
     void Update () {
 
-        if (Input.GetKey(KeyCode.G))
-        {
-            ThroughStart();
-            this.Invoke("ThroughEnd", 3.0f); //3秒後關閉技能
-        }
+        //if (Input.GetKey(KeyCode.G))
+        //{
+        //    ThroughStart();
+        //    this.Invoke("ThroughEnd", 3.0f); //3秒後關閉技能
+        //}
         
     }
     

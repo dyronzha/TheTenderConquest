@@ -12,13 +12,15 @@ public class C_Debris : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (f_time < 5.0f) f_time += Time.deltaTime;
-        else Destroy(this.gameObject);
+        //if (f_time < 5.0f) f_time += Time.deltaTime;
+        //else Destroy(this.gameObject);
 	}
 
     void OnTriggerEnter2D(Collider2D collider) {
         if (collider.tag == "enemy") {
-            Destroy(collider.gameObject);
+            //body.bodyType = RigidbodyType2D.Static;
+            //transform.parent = collider.transform;
+            collider.GetComponent<C_Enemy>().GetHurt(false, Mathf.Sign(body.velocity.x));
             Destroy(this.gameObject);
         }
         if (collider.tag == "floor")

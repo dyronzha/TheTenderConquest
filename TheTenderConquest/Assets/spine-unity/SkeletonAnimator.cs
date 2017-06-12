@@ -40,7 +40,7 @@ namespace Spine.Unity {
 		public enum MixMode { AlwaysMix, MixNext, SpineStyle }
 		public MixMode[] layerMixModes = new MixMode[0];
 
-		public bool autoReset = true;
+		private bool autoReset = true;
 		List<Animation> previousAnimations = new List<Animation>();
 
 		#region Bone Callbacks (ISkeletonAnimation)

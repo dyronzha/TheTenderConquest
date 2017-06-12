@@ -20,6 +20,7 @@ public class C_FarBackground : MonoBehaviour {
     float camera_r, camera_l;
     float camera_t, camera_b;
     Vector2 temp_vec2;
+    float temp_x, temp_y;
     // Use this for initialization
     void Awake () {
         camera = GameObject.Find("Main Camera");
@@ -40,10 +41,10 @@ public class C_FarBackground : MonoBehaviour {
     // Update is called once per frame
     private void Update()
     {
-        if (C_SceneManager.SceneManger.b_camera_busy) FarBackgroundMove();
+        if (C_SceneManager.SceneManger.b_camera_busy || C_SceneManager.SceneManger.b_look) FarBackgroundMove();
     }
     void FixedUpdate () {
-        if (!C_SceneManager.SceneManger.b_camera_busy) FarBackgroundMove();
+        if (!C_SceneManager.SceneManger.b_camera_busy && !C_SceneManager.SceneManger.b_look) FarBackgroundMove();
 	}
 
     void FarBackgroundMove()
@@ -57,11 +58,13 @@ public class C_FarBackground : MonoBehaviour {
                 else {
                     if (c_camera._b_right && !C_SceneManager.SceneManger.b_camera_busy)
                     {
-                        temp_vec2 = far_scenes[i].O_far_scene.transform.position - C_SceneManager.SceneManger.O_player.transform.position;
+                        Debug.Log("follow far background");
+                        temp_x = far_scenes[i].O_far_scene.transform.position.x- C_SceneManager.SceneManger.O_player.transform.position.x;
                         far_scenes[i].bk_f_x = far_scenes[i].limit_l + (camera.transform.position.x - camera_l) * far_scenes[i].trans_value_x;
                     }
                     else {
-                        far_scenes[i].bk_f_x = C_SceneManager.SceneManger.O_player.transform.position.x + temp_vec2.x - transform.position.x;
+                        Debug.Log("static far background");
+                        far_scenes[i].bk_f_x = C_SceneManager.SceneManger.O_player.transform.position.x + temp_x - transform.position.x;
                     }
                 }
                 //Debug.Log(this.gameObject.name + "  " + (camera.transform.position.x - camera_l) * trans_value);
@@ -70,7 +73,17 @@ public class C_FarBackground : MonoBehaviour {
             else if (camera.transform.position.y >= camera_t) far_scenes[i].bk_f_y = far_scenes[i].limit_t;
             else
             {
-                far_scenes[i].bk_f_y = far_scenes[i].limit_b + (camera.transform.position.y - camera_b) * far_scenes[i].trans_value_y;
+                if (!far_scenes[i].b_infinite_far) far_scenes[i].bk_f_y = far_scenes[i].limit_b + (camera.transform.position.y - camera_b) * far_scenes[i].trans_value_y;
+                else {
+                    if(!C_SceneManager.SceneManger.b_camera_busy && !C_SceneManager.SceneManger.b_look)
+                    {
+                        temp_y = far_scenes[i].O_far_scene.transform.position.y - C_SceneManager.SceneManger.O_player.transform.position.y;
+                        far_scenes[i].bk_f_y = far_scenes[i].limit_b + (camera.transform.position.y - camera_b) * far_scenes[i].trans_value_y;
+                    }
+                    else {
+                        far_scenes[i].bk_f_y = C_SceneManager.SceneManger.O_player.transform.position.y + temp_y - transform.position.y;
+                    }
+                }
                 //Debug.Log(this.gameObject.name + "  " + (camera.transform.position.x - camera_l) * trans_value);
                 //if (camera.transform.localScale.y > 0) bk_f_y = limit_b + (camera.transform.position.y - camera_b) * trans_value_y;
             }

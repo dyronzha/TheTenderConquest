@@ -11,6 +11,7 @@ TagManager:
   - save_point
   - hp_props
   - scene_manager
+  - Fog
   layers:
   - Default
   - TransparentFX
@@ -22,7 +23,7 @@ TagManager:
   - 
   - ground
   - player
-  - 
+  - enemy
   - 
   - 
   - 
