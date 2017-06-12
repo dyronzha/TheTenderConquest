@@ -25,6 +25,12 @@ public class PlayMainStory : MonoBehaviour {
             movTexture.Pause();
             movAudio.Pause();
         }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            movTexture.Stop();
+            movAudio.Stop();
+            loadScece.SendMessage("ChangeScene");
+        }
         if (movTexture.isPlaying == false && Input.anyKeyDown)
         {
             loadScece.SendMessage("ChangeScene");

@@ -837,11 +837,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4937203986139956, guid: ba128b06c79cbb244963104b6a1178f6, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 13.17
+      value: 12.4
       objectReference: {fileID: 0}
     - target: {fileID: 4937203986139956, guid: ba128b06c79cbb244963104b6a1178f6, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 16.98
+      value: 16.8
       objectReference: {fileID: 0}
     - target: {fileID: 4937203986139956, guid: ba128b06c79cbb244963104b6a1178f6, type: 2}
       propertyPath: m_LocalPosition.z
@@ -8834,9 +8834,9 @@ PolygonCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Points:
     m_Paths:
-    - - {x: -0.7178096, y: 0.2864386}
-      - {x: -0.7178096, y: -0.27356198}
-      - {x: 0.7178096, y: -0.2864376}
+    - - {x: -0.72387695, y: 0.25610572}
+      - {x: -0.72387695, y: -0.24322912}
+      - {x: 0.7117462, y: -0.25610474}
       - {x: 0.7113728, y: 0.26068437}
 --- !u!61 &1223048100
 BoxCollider2D:
@@ -8849,9 +8849,9 @@ BoxCollider2D:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_Offset: {x: 0, y: -0.0067677842}
+  m_Offset: {x: 0, y: -0.009801765}
   serializedVersion: 2
-  m_Size: {x: 1.73, y: 0.8}
+  m_Size: {x: 1.73, y: 0.721135}
 --- !u!114 &1223048101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9540,7 +9540,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1322898053}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.07, y: 16.58, z: -10}
+  m_LocalPosition: {x: 15.3, y: 16.4, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 900082562}
